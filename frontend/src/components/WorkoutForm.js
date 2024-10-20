@@ -1,8 +1,10 @@
 import { useState } from "react"
+import { useWorkoutsContext } from "../hooks/useWorkoutsContext";
 
 const WorkoutForm = () => {
+    const { dispatch } = useWorkoutsContext();
     //these are all things that are going to be updated on the page, so you have to use a useState hook
-    const [title, setTitle] = useState(""); 
+    const [title, setTitle] = useState("");
     const [load, setLoad] = useState("");
     const [reps, setReps] = useState("");
     const [error, setError] = useState(null);
@@ -11,27 +13,31 @@ const WorkoutForm = () => {
         e.preventDefault();
 
         //put user input in an object 
-        const workout = {title, load, reps};
+        const workout = { title, load, reps };
 
         const response = await fetch("/api/workouts", {
             method: "POST",
             body: JSON.stringify(workout), //turn object into a JSON format and send to backend
-            headers:{
+            headers: {
                 "Content-Type": "application/json"
             }
         })
         const json = await response.json();
 
-        if(!response.ok){
+        if (!response.ok) {
             setError(json.error);
         }
 
-        if(response.ok){
+        if (response.ok) {
+            //set all states to blank after creating the new workout in backend
             setTitle("");
             setLoad("");
             setReps("");
             setError(null)
             console.log("new workout added: ", json)
+            /*the backend returns a json with the workout we just created, 
+            so just pass the json to the context to add it to the UI instantly*/
+            dispatch({ type: "CREATE_WORKOUT", payload: json })
         }
     }
 
